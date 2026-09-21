@@ -83,7 +83,7 @@ export default function QuakesPage() {
                 }
               }}
             />
-            <p className="pb-2 text-center font-mono text-[11px] text-slate-500">drag to spin · scroll to zoom · click a pulse · double-click resets</p>
+            <p className="pb-2 text-center font-mono text-[11px] text-slate-500">drag to orbit · scroll to zoom · click a marker to fly there</p>
           </div>
           <div className="max-h-[720px] space-y-2 overflow-y-auto pr-1">
             {list.map((e) => (

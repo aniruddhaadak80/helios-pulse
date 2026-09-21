@@ -101,7 +101,7 @@ export default function Dashboard() {
               </Link>
             ) : (
               <p className="mt-2 text-center font-mono text-[11px] text-slate-500">
-                drag to spin · scroll to zoom · click an orange pulse for its quake
+                drag to orbit · scroll to zoom · click a quake marker
               </p>
             )}
           </motion.div>
