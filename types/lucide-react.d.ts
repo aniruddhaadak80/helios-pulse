@@ -1,0 +1,21 @@
+declare module "lucide-react" {
+  import type { SVGProps } from "react";
+  export type IconProps = SVGProps<SVGSVGElement> & { size?: number | string };
+  export type Icon = (props: IconProps) => JSX.Element;
+  export const Activity: Icon;
+  export const AlertTriangle: Icon;
+  export const Bot: Icon;
+  export const Flame: Icon;
+  export const Globe2: Icon;
+  export const Magnet: Icon;
+  export const Radio: Icon;
+  export const Satellite: Icon;
+  export const Send: Icon;
+  export const Shield: Icon;
+  export const Sparkles: Icon;
+  export const Sun: Icon;
+  export const Wind: Icon;
+  export const Zap: Icon;
+  const _default: Record<string, Icon>;
+  export default _default;
+}
