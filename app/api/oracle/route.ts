@@ -4,34 +4,41 @@ import { auroraVerdict, gridRisk, stormLevel } from "@/lib/helio";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL ?? "gemini-3.5-flash";
+const GEMINI_MODELS = [
+  process.env.GEMINI_MODEL ?? "gemini-3.5-flash",
+  "gemini-2.5-flash",
+  "gemini-2.0-flash",
+].filter((m, i, a) => m && a.indexOf(m) === i);
 
-async function askGemini(prompt: string, apiKey: string): Promise<string | null> {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 22000);
-  try {
-    const r = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
-      {
-        method: "POST",
-        signal: ctrl.signal,
-        headers: { "x-goog-api-key": apiKey, "content-type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { maxOutputTokens: 500 },
-        }),
-      }
-    );
-    if (!r.ok) return null;
-    const j = await r.json();
-    const parts = j.candidates?.[0]?.content?.parts ?? [];
-    const text = parts.map((p: { text?: string }) => p.text ?? "").join("").trim();
-    return text || null;
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(t);
+async function askGemini(prompt: string, apiKey: string): Promise<{ text: string; model: string } | null> {
+  for (const model of GEMINI_MODELS) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 20000);
+    try {
+      const r = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        {
+          method: "POST",
+          signal: ctrl.signal,
+          headers: { "x-goog-api-key": apiKey, "content-type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { maxOutputTokens: 500 },
+          }),
+        }
+      );
+      if (!r.ok) continue; // 429/503/404 → try next model in the chain
+      const j = await r.json();
+      const parts = j.candidates?.[0]?.content?.parts ?? [];
+      const text = parts.map((p: { text?: string }) => p.text ?? "").join("").trim();
+      if (text) return { text, model };
+    } catch {
+      // timeout/network → try next model
+    } finally {
+      clearTimeout(t);
+    }
   }
+  return null;
 }
 
 /**
@@ -66,13 +73,13 @@ export async function POST(req: Request) {
 
   const key = process.env.GEMINI_API_KEY;
   if (key) {
-    const answer = await askGemini(
+    const hit = await askGemini(
       `You are HELIOS ORACLE, a terse space-weather intelligence officer. Answer in under 180 words, plain English, ` +
         `with 3 sections: NOW / IMPACTS (grid, GPS/aviation, aurora) / TONIGHT. ` +
         `Never claim earthquakes are caused by solar activity.\n\nLive context:\n${context}\n\nUser question: ${question}`,
       key
     );
-    if (answer) return NextResponse.json({ answer, mode: "gemini", model: GEMINI_MODEL, kp, risk });
+    if (hit) return NextResponse.json({ answer: hit.text, mode: "gemini", model: hit.model, kp, risk });
   }
 
   const engineBrief = [
@@ -92,7 +99,7 @@ export async function POST(req: Request) {
 export async function GET() {
   return NextResponse.json({
     name: "HELIOS Oracle",
-    brain: `Gemini ${GEMINI_MODEL} (free tier) with physics-engine fallback`,
+    brain: `Gemini chain [${GEMINI_MODELS.join(" → ")}] (free tier) with physics-engine fallback`,
     usage: "POST { question, kp, wind, bz, lat } → plain-English briefing",
     example: { question: "Can I see aurora at 52.5° tonight?", kp: 5.2, wind: 610, bz: -12, lat: 52.5 },
   });
