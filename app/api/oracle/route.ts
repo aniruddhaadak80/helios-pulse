@@ -10,7 +10,12 @@ const GEMINI_MODELS = [
   "gemini-2.0-flash",
 ].filter((m, i, a) => m && a.indexOf(m) === i);
 
-async function askGemini(prompt: string, apiKey: string): Promise<{ text: string; model: string } | null> {
+async function askGemini(
+  prompt: string,
+  apiKey: string
+): Promise<{ text: string; model: string } | { errors: string[] }> {
+  const errors: string[] = [];
+  for (const model of GEMINI_MODELS) {
   for (const model of GEMINI_MODELS) {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 20000);
@@ -28,7 +33,9 @@ async function askGemini(prompt: string, apiKey: string): Promise<{ text: string
         }
       );
       if (!r.ok) {
-        console.error(`[helios-oracle] ${model} HTTP ${r.status}`);
+        const tag = `${model}: HTTP ${r.status}`;
+        console.error(`[helios-oracle] ${tag}`);
+        errors.push(tag);
         continue; // 429/503/404 → try next model in the chain
       }
       const j = await r.json();
@@ -36,13 +43,15 @@ async function askGemini(prompt: string, apiKey: string): Promise<{ text: string
       const text = parts.map((p: { text?: string }) => p.text ?? "").join("").trim();
       if (text) return { text, model };
     } catch (e) {
-      console.error(`[helios-oracle] ${model} fetch fail: ${e instanceof Error ? e.message : String(e)}`);
+      const tag = `${model}: ${e instanceof Error && e.name === "AbortError" ? "timeout" : "network-fail"}`;
+      console.error(`[helios-oracle] ${tag}`);
+      errors.push(tag);
       // timeout/network → try next model
     } finally {
       clearTimeout(t);
     }
   }
-  return null;
+  return { errors };
 }
 
 /**
@@ -83,7 +92,11 @@ export async function POST(req: Request) {
         `Never claim earthquakes are caused by solar activity.\n\nLive context:\n${context}\n\nUser question: ${question}`,
       key
     );
-    if (hit) return NextResponse.json({ answer: hit.text, mode: "gemini", model: hit.model, kp, risk });
+    if ("text" in hit)
+      return NextResponse.json({ answer: hit.text, mode: "gemini", model: hit.model, kp, risk });
+    var geminiErrors: string[] = hit.errors;
+  } else {
+    var geminiErrors: string[] = ["no GEMINI_API_KEY configured"];
   }
 
   const engineBrief = [
@@ -97,7 +110,7 @@ export async function POST(req: Request) {
     `Q: ${question}`,
   ].join("\n");
 
-  return NextResponse.json({ answer: engineBrief, mode: "physics-engine", kp, risk });
+  return NextResponse.json({ answer: engineBrief, mode: "physics-engine", kp, risk, geminiErrors });
 }
 
 export async function GET() {
