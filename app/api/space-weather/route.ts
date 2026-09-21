@@ -59,7 +59,11 @@ export async function GET() {
     const wind: Array<{ time_tag: string; proton_speed: number | null; proton_density: number | null }> = await getJSON(
       "https://services.swpc.noaa.gov/json/rtsw/rtsw_wind_1m.json"
     );
-    const rows = wind.filter((r) => Number.isFinite(r.proton_speed)).slice(-120);
+    const rows = wind
+      .filter((r) => Number.isFinite(r.proton_speed))
+      .sort((a, b) => (a.time_tag < b.time_tag ? 1 : -1))
+      .slice(0, 120)
+      .reverse();
     const last = rows[rows.length - 1];
     out.solarWind = {
       speed: last ? last.proton_speed : null,
@@ -76,7 +80,11 @@ export async function GET() {
     const mag: Array<{ time_tag: string; bz_gsm: number | null; bz_gse: number | null; bt: number | null }> = await getJSON(
       "https://services.swpc.noaa.gov/json/rtsw/rtsw_mag_1m.json"
     );
-    const rows = mag.filter((r) => Number.isFinite(r.bz_gsm ?? r.bz_gse)).slice(-120);
+    const rows = mag
+      .filter((r) => Number.isFinite(r.bz_gsm ?? r.bz_gse))
+      .sort((a, b) => (a.time_tag < b.time_tag ? 1 : -1))
+      .slice(0, 120)
+      .reverse();
     const last = rows[rows.length - 1];
     out.mag = {
       bz: last ? (last.bz_gsm ?? last.bz_gse) : null,
