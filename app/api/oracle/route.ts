@@ -16,7 +16,6 @@ async function askGemini(
 ): Promise<{ text: string; model: string } | { errors: string[] }> {
   const errors: string[] = [];
   for (const model of GEMINI_MODELS) {
-  for (const model of GEMINI_MODELS) {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 20000);
     try {
