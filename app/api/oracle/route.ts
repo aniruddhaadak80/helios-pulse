@@ -27,12 +27,16 @@ async function askGemini(prompt: string, apiKey: string): Promise<{ text: string
           }),
         }
       );
-      if (!r.ok) continue; // 429/503/404 → try next model in the chain
+      if (!r.ok) {
+        console.error(`[helios-oracle] ${model} HTTP ${r.status}`);
+        continue; // 429/503/404 → try next model in the chain
+      }
       const j = await r.json();
       const parts = j.candidates?.[0]?.content?.parts ?? [];
       const text = parts.map((p: { text?: string }) => p.text ?? "").join("").trim();
       if (text) return { text, model };
-    } catch {
+    } catch (e) {
+      console.error(`[helios-oracle] ${model} fetch fail: ${e instanceof Error ? e.message : String(e)}`);
       // timeout/network → try next model
     } finally {
       clearTimeout(t);
