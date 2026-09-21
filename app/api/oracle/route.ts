@@ -85,6 +85,7 @@ export async function POST(req: Request) {
   ].join("\n");
 
   const key = process.env.GEMINI_API_KEY;
+  let geminiErrors: string[] = [];
   if (key) {
     const hit = await askGemini(
       `You are HELIOS ORACLE, a terse space-weather intelligence officer. Answer in under 180 words, plain English, ` +
@@ -94,9 +95,9 @@ export async function POST(req: Request) {
     );
     if ("text" in hit)
       return NextResponse.json({ answer: hit.text, mode: "gemini", model: hit.model, kp, risk });
-    var geminiErrors: string[] = hit.errors;
+    geminiErrors = hit.errors;
   } else {
-    var geminiErrors: string[] = ["no GEMINI_API_KEY configured"];
+    geminiErrors = ["no GEMINI_API_KEY configured"];
   }
 
   const engineBrief = [
