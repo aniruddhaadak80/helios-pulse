@@ -37,13 +37,13 @@ HELIOS PULSE turns raw NOAA/USGS firehoses into **one beautiful screen anyone ca
 
 | | |
 |---|---|
-| 🌍 **3D living globe** | `cobe` WebGL Earth — glow shifts indigo → magenta with storm level, orange pulses mark live M4.5+ quakes |
-| 🔴 **Live gauges** | Kp index · solar-wind speed · IMF Bz · X-ray flare class · grid-stress score (NOAA SWPC, 60s cache) |
-| 📈 **Storm tapes** | 2-hour Kp / wind / Bz sparklines + GOES X-ray flux + active NOAA alerts ticker |
-| 🌌 **Aurora oracle** | Enter any latitude → 0–100 visibility verdict + tonight's plan (22:00–02:00 field protocol) |
-| 🌍 **Quake feed** | USGS M4.5+ last 72h with depth/tsunami flags — shown *with* an honest no-causation note |
-| 🤖 **HELIOS Oracle** | Physics-engine briefings in plain English; auto-upgrades to LLM when `OPENAI_API_KEY` is set |
-| 🧩 **REST + MCP** | `/api/space-weather` · `/api/earthquakes` · `/api/oracle` · `/api/mcp` — point your agent at it |
+| 🌍 **Interactive 3D globe** | `cobe` WebGL Earth — **drag to spin, scroll to zoom, click quake pulses** to select, auto fly-to, storm-reactive glow |
+| 🔴 **Live room** (`/live`) | Kp · solar-wind · Bz · X-ray class · grid-stress + feed-health dots (NOAA SWPC, 60s cache) |
+| 📈 **Storm tapes** | 2-hour Kp / wind / Bz sparklines + GOES X-ray flux + OVATION aurora advisories |
+| 🌌 **Aurora planner** (`/aurora`) | Latitude slider + presets, 0–100 verdict, oval-edge visual, G-scale decoder |
+| 🌍 **Quake explorer** (`/quakes`) | Magnitude filters, click-to-fly globe, USGS detail cards |
+| 🤖 **HELIOS Oracle** (`/oracle`) | **Gemini 3.5 Flash** briefings in plain English; physics engine fallback with zero keys |
+| 🧩 **REST + MCP** (`/developers`) | `/api/space-weather` · `/api/earthquakes` · `/api/oracle` · `/api/mcp` — live-try playground included |
 
 ## 🤖 HELIOS Oracle
 
@@ -83,10 +83,12 @@ npm install
 npm run dev        # → http://localhost:3000
 ```
 
-Optional LLM upgrade:
+Optional AI upgrade (free tier — key stays server-side, never committed):
 
 ```bash
-$env:OPENAI_API_KEY="sk-..."   # PowerShell
+# .env.local (gitignored) — or set GEMINI_API_KEY in Vercel env
+GEMINI_API_KEY="your-ai-studio-key"
+GEMINI_MODEL="gemini-3.5-flash"
 npm run dev
 ```
 

@@ -1,10 +1,11 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
+import Starfield from "@/components/Starfield";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "HELIOS PULSE — Solar Maximum 2026 Live Planetary Intelligence",
   description:
-    "Live space-weather, aurora, earthquake and infrastructure-risk intelligence for Solar Cycle 25 maximum. Real NOAA + USGS data, 3D globe, AI Oracle, open REST + MCP API. Open source.",
+    "Live space-weather, aurora, earthquake and infrastructure-risk intelligence for Solar Cycle 25 maximum. Real NOAA + USGS data, interactive 3D globe, Gemini Oracle, open REST + MCP API. Open source.",
   keywords: [
     "solar maximum 2026",
     "space weather",
@@ -36,12 +37,6 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://helios-pulse.vercel.app"),
 };
 
-export const viewport: Viewport = {
-  themeColor: "#030014",
-  width: "device-width",
-  initialScale: 1,
-};
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="h-full">
@@ -58,7 +53,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <link rel="manifest" href="/manifest.webmanifest" />
       </head>
-      <body className="min-h-full flex flex-col cosmos-bg">{children}</body>
+      <body className="min-h-full flex flex-col cosmos-bg">
+        <Starfield />
+        {children}
+      </body>
     </html>
   );
 }
