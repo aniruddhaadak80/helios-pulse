@@ -47,7 +47,10 @@ export function useHelios() {
   }, []);
 
   useEffect(() => {
-    load();
+    // Defer the first load so the effect does not set state synchronously.
+    queueMicrotask(() => {
+      void load();
+    });
     const t = setInterval(load, 120000);
     return () => clearInterval(t);
   }, [load]);

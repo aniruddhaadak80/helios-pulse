@@ -63,7 +63,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ result: await r.json() });
   }
   if (body.tool === "helios.quakes") {
-    const r = await fetch(`${base}/api/earthquakes?minmag=4.5&limit=20&hours=72`);
+    const minmag = typeof body.args?.minmag === "number" ? body.args.minmag : 4.5;
+    const limit = typeof body.args?.limit === "number" ? body.args.limit : 20;
+    const r = await fetch(
+      `${base}/api/earthquakes?minmag=${encodeURIComponent(String(minmag))}&limit=${encodeURIComponent(String(limit))}&hours=72`
+    );
     return NextResponse.json({ result: await r.json() });
   }
   if (body.tool === "helios.ask_oracle") {
