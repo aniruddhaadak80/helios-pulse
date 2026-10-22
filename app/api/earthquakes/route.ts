@@ -7,9 +7,15 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const minmag = searchParams.get("minmag") ?? "4.5";
   const limit = searchParams.get("limit") ?? "30";
-  const hours = Number(searchParams.get("hours") ?? "72");
-
-  const start = new Date(Date.now() - hours * 3600 * 1000).toISOString().slice(0, 10);
+  const requestedHours = Number(searchParams.get("hours") ?? "72");
+  // A window is an instant, not a calendar day: truncating it to a date
+  // widened it by up to a day. An unusable value falls back to the default
+  // instead of throwing outside the try block below.
+  const hours =
+    Number.isFinite(requestedHours) && requestedHours > 0
+      ? Math.min(requestedHours, 24 * 30)
+      : 72;
+  const start = new Date(Date.now() - hours * 3600 * 1000).toISOString();
   const url =
     `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson` +
     `&starttime=${start}&minmagnitude=${encodeURIComponent(minmag)}` +

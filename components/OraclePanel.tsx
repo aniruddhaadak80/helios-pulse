@@ -27,7 +27,10 @@ export default function OraclePanel({
   const [busy, setBusy] = useState(false);
   const [mode, setMode] = useState<string>("gemini");
   const ctxRef = useRef({ kp, wind, bz, lat: lat ?? null, quakeCount: quakeCount ?? 0 });
-  ctxRef.current = { kp, wind, bz, lat: lat ?? null, quakeCount: quakeCount ?? 0 };
+  // The ref has to be refreshed after render, not during it.
+  useEffect(() => {
+    ctxRef.current = { kp, wind, bz, lat: lat ?? null, quakeCount: quakeCount ?? 0 };
+  }, [kp, wind, bz, lat, quakeCount]);
   const askedRef = useRef<string | null>(null);
 
   const ask = useCallback(async (question: string) => {
